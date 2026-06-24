@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Level Shiba Kennel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#100E0B;--ink-2:#181410;--surface:#1F1A14;--line:#322B22;--line-soft:#27211a;
+    --gold:#C9A24B;--gold-soft:#E3C877;--gold-dim:#8A7434;--paper:#ECE4D4;--muted:#9C927F;
+    --matcha:#9CB36A;--amber:#D2A85A;--sold:#A06B61;--seal:#B23B2E;--danger:#C0584C;--r:12px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--ink);color:var(--paper);font-family:'Inter',system-ui,sans-serif;font-weight:300;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .mincho{font-family:'Shippori Mincho',serif}
+  a{color:var(--gold-soft)}
+  .seal{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--gold);color:var(--gold-soft);font-family:'Shippori Mincho',serif;font-weight:700;font-size:18px;background:radial-gradient(circle at 30% 25%,#2a2318,#15110c)}
+
+  /* login */
+  .login-wrap{min-height:100dvh;display:grid;place-items:center;padding:24px}
+  .login{width:100%;max-width:380px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:34px 28px;text-align:center}
+  .login .seal{margin:0 auto 18px;width:48px;height:48px;font-size:24px}
+  .login h1{font-family:'Shippori Mincho',serif;font-weight:600;font-size:23px;margin-bottom:4px}
+  .login p.sub{color:var(--muted);font-size:13px;margin-bottom:24px}
+  label{display:block;text-align:left;font-size:12px;color:var(--gold-dim);letter-spacing:.5px;text-transform:uppercase;margin:0 0 6px}
+  input,select,textarea{
+    width:100%;background:var(--ink-2);border:1px solid var(--line);border-radius:10px;
+    color:var(--paper);font-family:inherit;font-size:15px;padding:12px 14px;margin-bottom:16px;font-weight:300
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,162,75,.18)}
+  textarea{resize:vertical;min-height:80px}
+  .btn{font-family:'Inter';font-weight:500;font-size:14px;letter-spacing:.3px;padding:12px 22px;border-radius:999px;
+    cursor:pointer;border:1px solid transparent;display:inline-flex;align-items:center;justify-content:center;gap:8px;transition:.2s;text-decoration:none}
+  .btn-gold{background:var(--gold);color:#1a1407}.btn-gold:hover{background:var(--gold-soft)}
+  .btn-ghost{border-color:var(--line);color:var(--paper);background:none}.btn-ghost:hover{border-color:var(--gold)}
+  .btn-danger{border-color:var(--danger);color:var(--danger);background:none}.btn-danger:hover{background:var(--danger);color:#fff}
+  .btn-sm{padding:7px 14px;font-size:12.5px}
+  .btn-full{width:100%}
+  .msg{font-size:13px;margin-top:6px;min-height:18px}
+  .msg.err{color:var(--danger)}.msg.ok{color:var(--matcha)}
+
+  /* shell */
+  .topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;
+    padding:12px 18px;background:rgba(16,14,11,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line-soft)}
+  .topbar .l{display:flex;align-items:center;gap:11px}
+  .topbar b{font-family:'Shippori Mincho',serif;font-weight:600;font-size:15px}
+  .topbar small{display:block;color:var(--gold-dim);font-size:10px;letter-spacing:1.5px;text-transform:uppercase}
+  .tabs{display:flex;gap:4px;overflow-x:auto;padding:10px 14px;background:var(--ink-2);border-bottom:1px solid var(--line-soft);position:sticky;top:57px;z-index:20}
+  .tabs button{white-space:nowrap;background:none;border:1px solid var(--line);color:var(--muted);font-family:inherit;
+    font-size:13px;padding:8px 16px;border-radius:999px;cursor:pointer;transition:.2s}
+  .tabs button.on{background:var(--gold);color:#1a1407;border-color:var(--gold);font-weight:500}
+  main{max-width:760px;margin:0 auto;padding:22px 16px 80px}
+  .panel{display:none}.panel.on{display:block}
+  .panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px}
+  .panel-head h2{font-family:'Shippori Mincho',serif;font-weight:600;font-size:22px}
+
+  .item{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:12px}
+  .item img{width:64px;height:64px;border-radius:9px;object-fit:cover;flex:none;background:#0c0a07;border:1px solid var(--line)}
+  .item .info{flex:1;min-width:0}
+  .item .info h3{font-size:16px;font-weight:500;font-family:'Shippori Mincho',serif;margin-bottom:2px}
+  .item .info .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .badge{font-size:10px;padding:3px 9px;border-radius:999px;letter-spacing:.5px;text-transform:uppercase;font-weight:600;display:inline-block}
+  .badge.available{color:var(--matcha);border:1px solid var(--matcha)}
+  .badge.booked{color:var(--amber);border:1px solid var(--amber)}
+  .badge.sold{color:var(--sold);border:1px solid var(--sold)}
+  .item .acts{display:flex;flex-direction:column;gap:6px;flex:none}
+
+  .empty{text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;padding:36px 16px;font-size:13.5px}
+
+  /* modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(8,6,4,.75);backdrop-filter:blur(3px);z-index:60;display:none;padding:18px;overflow-y:auto}
+  .modal-bg.on{display:flex;align-items:flex-start;justify-content:center}
+  .modal{width:100%;max-width:480px;background:var(--ink-2);border:1px solid var(--line);border-radius:16px;padding:24px;margin:auto}
+  .modal h3{font-family:'Shippori Mincho',serif;font-weight:600;font-size:20px;margin-bottom:20px}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+  @media(max-width:460px){.row2{grid-template-columns:1fr}}
+  .uploader{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+  .preview{width:84px;height:84px;border-radius:10px;object-fit:cover;background:#0c0a07;border:1px solid var(--line);flex:none}
+  .uploader label{margin:0}
+  .file-btn{position:relative;overflow:hidden;display:inline-block}
+  .file-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer}
+  .modal-acts{display:flex;gap:10px;margin-top:8px}
+  .hint{font-size:11.5px;color:var(--gold-dim);margin:-8px 0 14px}
+  .config-warn{background:rgba(192,88,76,.12);border:1px solid var(--danger);color:#e7b3ab;border-radius:12px;padding:16px;font-size:13.5px;margin-bottom:18px;line-height:1.6}
+  .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(26,20,7,.3);border-top-color:#1a1407;border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<!-- ====== LOGIN ====== -->
+<div class="login-wrap" id="loginView">
+  <div class="login">
+    <span class="seal">犬</span>
+    <h1>Admin Panel</h1>
+    <p class="sub">Level Shiba Kennel</p>
+    <div id="cfgWarn"></div>
+    <div id="loginForm">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="email@kamu.com" autocomplete="username">
+      <label>Password</label>
+      <input type="password" id="pass" placeholder="••••••••" autocomplete="current-password">
+      <button class="btn btn-gold btn-full" id="loginBtn">Masuk</button>
+      <div class="msg err" id="loginMsg"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ====== APP ====== -->
+<div id="appView" style="display:none">
+  <div class="topbar">
+    <div class="l"><span class="seal">犬</span><div><b>Level Shiba Kennel</b><small>Admin</small></div></div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <a class="btn btn-ghost btn-sm" href="index.html" target="_blank">Lihat Web</a>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn">Keluar</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button data-tab="puppies" class="on">Puppy</button>
+    <button data-tab="indukan">Indukan</button>
+    <button data-tab="gallery">Galeri</button>
+    <button data-tab="settings">Pengaturan</button>
+  </div>
+
+  <main>
+    <!-- PUPPIES -->
+    <section class="panel on" id="tab-puppies">
+      <div class="panel-head"><h2>Puppy</h2><button class="btn btn-gold btn-sm" id="addPuppy">+ Tambah</button></div>
+      <div id="puppyList"></div>
+    </section>
+    <!-- INDUKAN -->
+    <section class="panel" id="tab-indukan">
+      <div class="panel-head"><h2>Indukan</h2><button class="btn btn-gold btn-sm" id="addIndu">+ Tambah</button></div>
+      <div id="induList"></div>
+    </section>
+    <!-- GALLERY -->
+    <section class="panel" id="tab-gallery">
+      <div class="panel-head"><h2>Galeri</h2><button class="btn btn-gold btn-sm" id="addGal">+ Tambah</button></div>
+      <div id="galList"></div>
+    </section>
+    <!-- SETTINGS -->
+    <section class="panel" id="tab-settings">
+      <div class="panel-head"><h2>Pengaturan</h2></div>
+      <div class="uploader">
+        <img class="preview" id="logoPrev" alt="">
+        <div>
+          <label>Logo Kennel</label>
+          <span class="btn btn-ghost btn-sm file-btn">Pilih Logo<input type="file" id="logoFile" accept="image/*"></span>
+        </div>
+      </div>
+      <label>Link Instagram</label>
+      <input type="url" id="setIgUrl" placeholder="https://instagram.com/...">
+      <label>Handle Instagram (yang tampil)</label>
+      <input type="text" id="setIgHandle" placeholder="@shibainu.level">
+      <label>Tentang Kennel (Indonesia)</label>
+      <textarea id="setAboutId" placeholder="Ceritakan tentang kennel kamu... (pisahkan paragraf dengan Enter)"></textarea>
+      <label>Tentang Kennel (English)</label>
+      <textarea id="setAboutEn" placeholder="Tell buyers about your kennel..."></textarea>
+      <button class="btn btn-gold btn-full" id="saveSettings">Simpan Pengaturan</button>
+      <div class="msg ok" id="setMsg"></div>
+    </section>
+  </main>
+</div>
+
+<!-- ====== MODAL ====== -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<script type="module">
+/* ============================================================
+   GANTI dengan config Firebase yang sama persis seperti di index.html
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCvKIY1nYRiAwWYBAjwcy0YmtCSaO_3smU",
+  authDomain: "level-shiba.firebaseapp.com",
+  projectId: "level-shiba",
+  storageBucket: "level-shiba.firebasestorage.app",
+  messagingSenderId: "781317712806",
+  appId: "1:781317712806:web:81ed55aa39be460b373d67"
+};
+
+const CONFIGURED = !FIREBASE_CONFIG.apiKey.includes('PASTE');
+const $=id=>document.getElementById(id);
+
+if(!CONFIGURED){
+  $('cfgWarn').innerHTML='<div class="config-warn"><b>Firebase belum diatur.</b><br>Isi dulu bagian <code>FIREBASE_CONFIG</code> di file <b>index.html</b> dan <b>admin.html</b> (sama persis), sesuai panduan di chat. Setelah itu login baru bisa dipakai.</div>';
+  $('loginForm').style.display='none';
+}
+
+let db, auth, fx;
+const COLL={puppies:[],indukan:[],gallery:[]};
+let SETTINGS={};
+
+/* ---------- image resize ---------- */
+function resizeImage(file,maxDim=1100,quality=.82){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>{ const img=new Image();
+      img.onload=()=>{ let w=img.width,h=img.height;
+        if(w>h&&w>maxDim){h=Math.round(h*maxDim/w);w=maxDim;}
+        else if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
+        const cv=document.createElement('canvas');cv.width=w;cv.height=h;
+        cv.getContext('2d').drawImage(img,0,0,w,h);
+        res(cv.toDataURL('image/jpeg',quality));
+      };
+      img.onerror=rej; img.src=r.result;
+    };
+    r.onerror=rej; r.readAsDataURL(file);
+  });
+}
+
+/* ---------- init firebase ---------- */
+async function init(){
+  if(!CONFIGURED) return;
+  const {initializeApp}=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+  const auth_=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js");
+  const fs=await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js");
+  const app=initializeApp(FIREBASE_CONFIG);
+  auth=auth_.getAuth(app); db=fs.getFirestore(app);
+  fx={...fs,...auth_};
+  auth_.onAuthStateChanged(auth,user=>{
+    if(user){ $('loginView').style.display='none'; $('appView').style.display='block'; loadAll(); }
+    else{ $('loginView').style.display='grid'; $('appView').style.display='none'; }
+  });
+  // login
+  $('loginBtn').addEventListener('click',doLogin);
+  $('pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+}
+async function doLogin(){
+  const btn=$('loginBtn'); const msg=$('loginMsg'); msg.textContent='';
+  btn.innerHTML='<span class="spin"></span>'; btn.disabled=true;
+  try{ await fx.signInWithEmailAndPassword(auth,$('email').value.trim(),$('pass').value); }
+  catch(e){ msg.textContent = e.code==='auth/invalid-credential'?'Email atau password salah.':'Gagal masuk: '+e.code; }
+  finally{ btn.textContent='Masuk'; btn.disabled=false; }
+}
+$('logoutBtn')?.addEventListener('click',()=>fx.signOut(auth));
+
+/* ---------- load ---------- */
+async function loadAll(){
+  const grab=async c=>{const s=await fx.getDocs(fx.collection(db,c));return s.docs.map(d=>({id:d.id,...d.data()}));};
+  [COLL.puppies,COLL.indukan,COLL.gallery]=await Promise.all([grab('puppies'),grab('indukan'),grab('gallery')]);
+  const st=await fx.getDoc(fx.doc(db,'settings','site')); SETTINGS=st.exists()?st.data():{};
+  renderPuppies();renderIndu();renderGal();fillSettings();
+}
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tabs button').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.panel').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on'); $('tab-'+b.dataset.tab).classList.add('on');
+}));
+
+/* ---------- modal helper ---------- */
+const modalBg=$('modalBg'), modalBox=$('modalBox');
+function openModal(html){ modalBox.innerHTML=html; modalBg.classList.add('on'); }
+function closeModal(){ modalBg.classList.remove('on'); modalBox.innerHTML=''; }
+modalBg.addEventListener('click',e=>{if(e.target===modalBg)closeModal();});
+const esc=s=>(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ST={available:'Tersedia',booked:'Dipesan',sold:'Terjual'};
+const SX={male:'Jantan',female:'Betina'};
+
+/* ============== PUPPIES ============== */
+function renderPuppies(){
+  const el=$('puppyList');
+  if(!COLL.puppies.length){el.innerHTML='<div class="empty">Belum ada puppy. Klik “+ Tambah”.</div>';return;}
+  const o={available:0,booked:1,sold:2};
+  el.innerHTML=[...COLL.puppies].sort((a,b)=>o[a.status]-o[b.status]).map(p=>`
+    <div class="item">
+      <img src="${p.photo||''}" alt="">
+      <div class="info">
+        <h3>${esc(p.name)}</h3>
+        <div class="sub">${SX[p.sex]||''} · ${esc(p.color||'-')}</div>
+        <span class="badge ${p.status}">${ST[p.status]}</span>
+      </div>
+      <div class="acts">
+        <button class="btn btn-ghost btn-sm" data-edit-pup="${p.id}">Edit</button>
+        <button class="btn btn-danger btn-sm" data-del-pup="${p.id}">Hapus</button>
+      </div>
+    </div>`).join('');
+  el.querySelectorAll('[data-edit-pup]').forEach(b=>b.onclick=()=>puppyForm(b.dataset.editPup));
+  el.querySelectorAll('[data-del-pup]').forEach(b=>b.onclick=()=>delItem('puppies',b.dataset.delPup,renderPuppies));
+}
+function puppyForm(id){
+  const p = id? COLL.puppies.find(x=>x.id===id) : {photo:'',name:'',sex:'male',dob:'',color:'',status:'available',note:'',sireId:'',damId:''};
+  const sires=COLL.indukan.filter(i=>i.role==='sire'), dams=COLL.indukan.filter(i=>i.role==='dam');
+  const opt=(arr,sel)=>arr.map(i=>`<option value="${i.id}" ${i.id===sel?'selected':''}>${esc(i.name)}</option>`).join('');
+  openModal(`
+    <h3>${id?'Edit':'Tambah'} Puppy</h3>
+    <div class="uploader">
+      <img class="preview" id="pPrev" src="${p.photo||''}" alt="">
+      <span class="btn btn-ghost btn-sm file-btn">Pilih Foto<input type="file" id="pFile" accept="image/*"></span>
+    </div>
+    <label>Nama</label><input id="pName" value="${esc(p.name)}">
+    <div class="row2">
+      <div><label>Jenis Kelamin</label><select id="pSex"><option value="male"${p.sex==='male'?' selected':''}>Jantan</option><option value="female"${p.sex==='female'?' selected':''}>Betina</option></select></div>
+      <div><label>Tanggal Lahir</label><input type="date" id="pDob" value="${p.dob||''}"></div>
+    </div>
+    <div class="row2">
+      <div><label>Warna</label><input id="pColor" list="colors" value="${esc(p.color)}">
+        <datalist id="colors"><option>Red</option><option>Sesame</option><option>Black &amp; Tan</option><option>Cream</option></datalist></div>
+      <div><label>Status</label><select id="pStatus">
+        <option value="available"${p.status==='available'?' selected':''}>Tersedia</option>
+        <option value="booked"${p.status==='booked'?' selected':''}>Dipesan</option>
+        <option value="sold"${p.status==='sold'?' selected':''}>Terjual</option></select></div>
+    </div>
+    <div class="row2">
+      <div><label>Ayah (Sire)</label><select id="pSire"><option value="">—</option>${opt(sires,p.sireId)}</select></div>
+      <div><label>Ibu (Dam)</label><select id="pDam"><option value="">—</option>${opt(dams,p.damId)}</select></div>
+    </div>
+    <p class="hint">Indukan diambil dari tab “Indukan”. Tambahkan indukan dulu agar muncul di sini.</p>
+    <label>Keterangan</label><textarea id="pNote" placeholder="cth: aktif, vaksin lengkap...">${esc(p.note)}</textarea>
+    <div class="msg err" id="pErr"></div>
+    <div class="modal-acts">
+      <button class="btn btn-ghost btn-full" id="pCancel">Batal</button>
+      <button class="btn btn-gold btn-full" id="pSave">Simpan</button>
+    </div>`);
+  let photo=p.photo||'';
+  $('pFile').onchange=async e=>{ if(e.target.files[0]){ photo=await resizeImage(e.target.files[0]); $('pPrev').src=photo; } };
+  $('pCancel').onclick=closeModal;
+  $('pSave').onclick=async()=>{
+    if(!$('pName').value.trim()){$('pErr').textContent='Nama wajib diisi.';return;}
+    if(!photo){$('pErr').textContent='Foto wajib diisi.';return;}
+    const data={photo,name:$('pName').value.trim(),sex:$('pSex').value,dob:$('pDob').value,
+      color:$('pColor').value.trim(),status:$('pStatus').value,note:$('pNote').value.trim(),
+      sireId:$('pSire').value,damId:$('pDam').value,updatedAt:Date.now()};
+    await saveItem('puppies',id,data); await reloadCol('puppies'); renderPuppies(); closeModal();
+  };
+}
+
+/* ============== INDUKAN ============== */
+function renderIndu(){
+  const el=$('induList');
+  if(!COLL.indukan.length){el.innerHTML='<div class="empty">Belum ada indukan. Klik “+ Tambah”.</div>';return;}
+  el.innerHTML=COLL.indukan.map(i=>`
+    <div class="item">
+      <img src="${i.photo||''}" alt="">
+      <div class="info"><h3>${esc(i.name)}</h3>
+        <div class="sub">${i.role==='sire'?'Ayah / Sire':'Ibu / Dam'} · ${esc(i.color||'-')}</div></div>
+      <div class="acts">
+        <button class="btn btn-ghost btn-sm" data-edit-i="${i.id}">Edit</button>
+        <button class="btn btn-danger btn-sm" data-del-i="${i.id}">Hapus</button>
+      </div></div>`).join('');
+  el.querySelectorAll('[data-edit-i]').forEach(b=>b.onclick=()=>induForm(b.dataset.editI));
+  el.querySelectorAll('[data-del-i]').forEach(b=>b.onclick=()=>delItem('indukan',b.dataset.delI,()=>{reloadCol('puppies').then(renderPuppies);renderIndu();}));
+}
+function induForm(id){
+  const i=id?COLL.indukan.find(x=>x.id===id):{photo:'',name:'',role:'sire',color:'',pedigree:''};
+  openModal(`
+    <h3>${id?'Edit':'Tambah'} Indukan</h3>
+    <div class="uploader"><img class="preview" id="iPrev" src="${i.photo||''}" alt="">
+      <span class="btn btn-ghost btn-sm file-btn">Pilih Foto<input type="file" id="iFile" accept="image/*"></span></div>
+    <label>Nama</label><input id="iName" value="${esc(i.name)}">
+    <div class="row2">
+      <div><label>Peran</label><select id="iRole"><option value="sire"${i.role==='sire'?' selected':''}>Ayah / Sire</option><option value="dam"${i.role==='dam'?' selected':''}>Ibu / Dam</option></select></div>
+      <div><label>Warna</label><input id="iColor" list="colors2" value="${esc(i.color)}">
+        <datalist id="colors2"><option>Red</option><option>Sesame</option><option>Black &amp; Tan</option><option>Cream</option></datalist></div>
+    </div>
+    <label>Pedigree / Keterangan</label><input id="iPed" value="${esc(i.pedigree)}" placeholder="cth: import bloodline, NIPPO reg.">
+    <div class="msg err" id="iErr"></div>
+    <div class="modal-acts"><button class="btn btn-ghost btn-full" id="iCancel">Batal</button>
+      <button class="btn btn-gold btn-full" id="iSave">Simpan</button></div>`);
+  let photo=i.photo||'';
+  $('iFile').onchange=async e=>{ if(e.target.files[0]){ photo=await resizeImage(e.target.files[0]); $('iPrev').src=photo; } };
+  $('iCancel').onclick=closeModal;
+  $('iSave').onclick=async()=>{
+    if(!$('iName').value.trim()){$('iErr').textContent='Nama wajib diisi.';return;}
+    if(!photo){$('iErr').textContent='Foto wajib diisi.';return;}
+    await saveItem('indukan',id,{photo,name:$('iName').value.trim(),role:$('iRole').value,
+      color:$('iColor').value.trim(),pedigree:$('iPed').value.trim(),updatedAt:Date.now()});
+    await reloadCol('indukan'); renderIndu(); closeModal();
+  };
+}
+
+/* ============== GALLERY ============== */
+function renderGal(){
+  const el=$('galList');
+  if(!COLL.gallery.length){el.innerHTML='<div class="empty">Belum ada foto galeri.</div>';return;}
+  el.innerHTML=COLL.gallery.map(g=>`
+    <div class="item"><img src="${g.photo||''}" alt="">
+      <div class="info"><h3 style="font-size:14px">${esc(g.caption)||'(tanpa caption)'}</h3></div>
+      <div class="acts"><button class="btn btn-danger btn-sm" data-del-g="${g.id}">Hapus</button></div></div>`).join('');
+  el.querySelectorAll('[data-del-g]').forEach(b=>b.onclick=()=>delItem('gallery',b.dataset.delG,renderGal));
+}
+function galForm(){
+  openModal(`<h3>Tambah Foto Galeri</h3>
+    <div class="uploader"><img class="preview" id="gPrev" alt="">
+      <span class="btn btn-ghost btn-sm file-btn">Pilih Foto<input type="file" id="gFile" accept="image/*"></span></div>
+    <label>Caption (opsional)</label><input id="gCap" placeholder="cth: main pagi di halaman">
+    <div class="msg err" id="gErr"></div>
+    <div class="modal-acts"><button class="btn btn-ghost btn-full" id="gCancel">Batal</button>
+      <button class="btn btn-gold btn-full" id="gSave">Simpan</button></div>`);
+  let photo='';
+  $('gFile').onchange=async e=>{ if(e.target.files[0]){ photo=await resizeImage(e.target.files[0]); $('gPrev').src=photo; } };
+  $('gCancel').onclick=closeModal;
+  $('gSave').onclick=async()=>{
+    if(!photo){$('gErr').textContent='Pilih foto dulu.';return;}
+    await saveItem('gallery',null,{photo,caption:$('gCap').value.trim(),createdAt:Date.now()});
+    await reloadCol('gallery'); renderGal(); closeModal();
+  };
+}
+
+/* ============== SETTINGS ============== */
+function fillSettings(){
+  $('setIgUrl').value=SETTINGS.igUrl||'';
+  $('setIgHandle').value=SETTINGS.igHandle||'';
+  $('setAboutId').value=SETTINGS.about_id||'';
+  $('setAboutEn').value=SETTINGS.about_en||'';
+  if(SETTINGS.logo) $('logoPrev').src=SETTINGS.logo;
+}
+let logoData=null;
+$('logoFile')?.addEventListener('change',async e=>{ if(e.target.files[0]){ logoData=await resizeImage(e.target.files[0],400,.9); $('logoPrev').src=logoData; }});
+$('saveSettings')?.addEventListener('click',async()=>{
+  const data={igUrl:$('setIgUrl').value.trim(),igHandle:$('setIgHandle').value.trim(),
+    about_id:$('setAboutId').value.trim(),about_en:$('setAboutEn').value.trim()};
+  if(logoData) data.logo=logoData;
+  await fx.setDoc(fx.doc(db,'settings','site'),data,{merge:true});
+  SETTINGS={...SETTINGS,...data};
+  const m=$('setMsg'); m.textContent='Tersimpan ✓'; setTimeout(()=>m.textContent='',2500);
+});
+
+/* ---------- generic db ops ---------- */
+async function saveItem(coll,id,data){
+  if(id) await fx.updateDoc(fx.doc(db,coll,id),data);
+  else await fx.addDoc(fx.collection(db,coll),data);
+}
+async function delItem(coll,id,after){
+  if(!confirm('Yakin mau hapus item ini?')) return;
+  await fx.deleteDoc(fx.doc(db,coll,id)); await reloadCol(coll); after&&after();
+}
+async function reloadCol(coll){
+  const s=await fx.getDocs(fx.collection(db,coll)); COLL[coll]=s.docs.map(d=>({id:d.id,...d.data()}));
+}
+
+$('addPuppy')?.addEventListener('click',()=>puppyForm(null));
+$('addIndu')?.addEventListener('click',()=>induForm(null));
+$('addGal')?.addEventListener('click',galForm);
+
+init();
+</script>
+</body>
+</html>
