@@ -4,6 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Level Shiba Kennel</title>
+<!-- PWA / Add to Home Screen (admin) -->
+<meta name="theme-color" content="#100E0B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="LV ADM">
+<link rel="icon" type="image/png" href="icon_admin.png">
+<link rel="apple-touch-icon" href="icon_admin.png">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Level%20Shiba%20Kennel%20Admin%22%2C%22short_name%22%3A%22LV%20ADM%22%2C%22start_url%22%3A%22https%3A//jgs89mail.github.io/levelshiba/admin.html%22%2C%22scope%22%3A%22https%3A//jgs89mail.github.io/levelshiba/%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23100E0B%22%2C%22theme_color%22%3A%22%23100E0B%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22https%3A//jgs89mail.github.io/levelshiba/icon_admin.png%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image/png%22%2C%22purpose%22%3A%22any%22%7D%5D%7D">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -146,12 +155,21 @@
     <section class="panel" id="tab-settings">
       <div class="panel-head"><h2>Pengaturan</h2></div>
       <div class="uploader">
-        <img class="preview" id="logoPrev" alt="">
+        <img class="preview" id="logoHeaderPrev" alt="">
         <div>
-          <label>Logo Kennel</label>
-          <span class="btn btn-ghost btn-sm file-btn">Pilih Logo<input type="file" id="logoFile" accept="image/*"></span>
+          <label>Logo Header (kecil, pojok kiri atas)</label>
+          <span class="btn btn-ghost btn-sm file-btn">Pilih Logo Header<input type="file" id="logoHeaderFile" accept="image/*"></span>
         </div>
       </div>
+      <p class="hint">Sebaiknya gambar ringkas/ikon (mis. medali Shiba). PNG transparan didukung.</p>
+      <div class="uploader">
+        <img class="preview" id="logoHeroPrev" alt="">
+        <div>
+          <label>Logo Hero (besar, di atas judul)</label>
+          <span class="btn btn-ghost btn-sm file-btn">Pilih Logo Hero<input type="file" id="logoHeroFile" accept="image/*"></span>
+        </div>
+      </div>
+      <p class="hint">Cocok untuk wordmark/ilustrasi (mis. logo "EST. 2012"). PNG transparan didukung.</p>
       <label>Link Instagram</label>
       <input type="url" id="setIgUrl" placeholder="https://instagram.com/...">
       <label>Handle Instagram (yang tampil)</label>
@@ -197,7 +215,7 @@ const COLL={puppies:[],indukan:[],gallery:[]};
 let SETTINGS={};
 
 /* ---------- image resize ---------- */
-function resizeImage(file,maxDim=1100,quality=.82){
+function resizeImage(file,maxDim=1100,quality=.82,format='image/jpeg'){
   return new Promise((res,rej)=>{
     const r=new FileReader();
     r.onload=()=>{ const img=new Image();
@@ -206,7 +224,7 @@ function resizeImage(file,maxDim=1100,quality=.82){
         else if(h>maxDim){w=Math.round(w*maxDim/h);h=maxDim;}
         const cv=document.createElement('canvas');cv.width=w;cv.height=h;
         cv.getContext('2d').drawImage(img,0,0,w,h);
-        res(cv.toDataURL('image/jpeg',quality));
+        res(cv.toDataURL(format,quality));
       };
       img.onerror=rej; img.src=r.result;
     };
@@ -410,14 +428,19 @@ function fillSettings(){
   $('setIgHandle').value=SETTINGS.igHandle||'';
   $('setAboutId').value=SETTINGS.about_id||'';
   $('setAboutEn').value=SETTINGS.about_en||'';
-  if(SETTINGS.logo) $('logoPrev').src=SETTINGS.logo;
+  const hdr=SETTINGS.logoHeader||SETTINGS.logo, hero=SETTINGS.logoHero||SETTINGS.logo;
+  if(hdr) $('logoHeaderPrev').src=hdr;
+  if(hero) $('logoHeroPrev').src=hero;
 }
-let logoData=null;
-$('logoFile')?.addEventListener('change',async e=>{ if(e.target.files[0]){ logoData=await resizeImage(e.target.files[0],400,.9); $('logoPrev').src=logoData; }});
+let logoHeaderData=null, logoHeroData=null;
+// PNG (transparan) dipertahankan; ukuran disesuaikan per pemakaian
+$('logoHeaderFile')?.addEventListener('change',async e=>{ if(e.target.files[0]){ logoHeaderData=await resizeImage(e.target.files[0],400,1,'image/png'); $('logoHeaderPrev').src=logoHeaderData; }});
+$('logoHeroFile')?.addEventListener('change',async e=>{ if(e.target.files[0]){ logoHeroData=await resizeImage(e.target.files[0],800,1,'image/png'); $('logoHeroPrev').src=logoHeroData; }});
 $('saveSettings')?.addEventListener('click',async()=>{
   const data={igUrl:$('setIgUrl').value.trim(),igHandle:$('setIgHandle').value.trim(),
     about_id:$('setAboutId').value.trim(),about_en:$('setAboutEn').value.trim()};
-  if(logoData) data.logo=logoData;
+  if(logoHeaderData) data.logoHeader=logoHeaderData;
+  if(logoHeroData) data.logoHero=logoHeroData;
   await fx.setDoc(fx.doc(db,'settings','site'),data,{merge:true});
   SETTINGS={...SETTINGS,...data};
   const m=$('setMsg'); m.textContent='Tersimpan ✓'; setTimeout(()=>m.textContent='',2500);
